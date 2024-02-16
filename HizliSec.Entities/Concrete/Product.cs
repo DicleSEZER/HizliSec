@@ -9,6 +9,7 @@ namespace HizliSec.Entities.Concrete
         public int Id { get; set; }
         public int CategoryId { get; set; }
         public string Name { get; set; }
+        public int UnitInStock { get; set; }
         public Category Category { get; set; }
         public ICollection<SellerProduct> SellerProducts { get; set; }
     }

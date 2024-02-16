@@ -1,6 +1,7 @@
 ﻿using HizliSec.Business.Abstract;
 using HizliSec.DataAccess.Abstract;
 using HizliSec.DataAccess.Concrete.EntityFrameworkCore.Context;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HizliSec.Business.Concrete
 {
@@ -15,9 +16,11 @@ namespace HizliSec.Business.Concrete
         public ISellerProductDal SellerProductDal { get; }
         public IPictureDal PictureDal { get; }
 
+        public IMessageDal MessageDal { get; }
+
         HizliSecContext _context;
 
-        public UnitOfWork(ICategoryDal categoryDal, ICustomerDal customerDal, IOrderDal orderDal, IOrderDetailDal orderDetailDal, IProductDal productDal, ISellerDal sellerDal, ISellerProductDal sellerProductDal, HizliSecContext context, IPictureDal pictureDal)
+        public UnitOfWork(ICategoryDal categoryDal, ICustomerDal customerDal, IOrderDal orderDal, IOrderDetailDal orderDetailDal, IProductDal productDal, ISellerDal sellerDal, ISellerProductDal sellerProductDal, IPictureDal pictureDal, IMessageDal messageDal, HizliSecContext context)
         {
             CategoryDal = categoryDal;
             CustomerDal = customerDal;
@@ -26,9 +29,11 @@ namespace HizliSec.Business.Concrete
             ProductDal = productDal;
             SellerDal = sellerDal;
             SellerProductDal = sellerProductDal;
-            _context = context;
             PictureDal = pictureDal;
+            MessageDal = messageDal;
+            _context = context;
         }
+
         public void Dispose()
         {
             _context.Dispose();
@@ -36,6 +41,10 @@ namespace HizliSec.Business.Concrete
         public async Task<int> SaveAsync()
         {
             return _context.SaveChangesAsync().Result;
+        }
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync();
         }
     }
 }

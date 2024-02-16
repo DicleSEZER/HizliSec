@@ -1,9 +1,6 @@
 ﻿using HizliSec.DataAccess.Abstract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
+
 
 namespace HizliSec.Business.Abstract
 {
@@ -17,6 +14,8 @@ namespace HizliSec.Business.Abstract
         ISellerDal SellerDal { get; }
         ISellerProductDal SellerProductDal { get; }
         IPictureDal PictureDal { get; }
+        IMessageDal MessageDal { get; }
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task<int> SaveAsync();
     }
 }

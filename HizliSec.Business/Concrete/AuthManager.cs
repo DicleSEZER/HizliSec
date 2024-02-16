@@ -4,6 +4,7 @@ using HizliSec.Entities.Concrete;
 using Microsoft.AspNetCore.Identity;
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace HizliSec.Business.Concrete
 {
@@ -13,76 +14,66 @@ namespace HizliSec.Business.Concrete
         private readonly RoleManager<AppRole> _roleManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IUnitOfWork _unitOfWork;
-
-        public AuthManager(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, SignInManager<AppUser> signInManager, IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public AuthManager(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, SignInManager<AppUser> signInManager, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
-
         public async Task<IdentityResult> AddToRoleAsync(AppUser appUser, string role)
         {
 
             AppRole appRole = _roleManager.Roles.FirstOrDefault(x => x.Name == role);
             if (appRole is null)
             {
-                await _roleManager.CreateAsync(new AppRole()
+                appRole = new AppRole()
                 {
                     Name = role,
                     NormalizedName = role.ToUpper()
-                });
+                };
+                await _roleManager.CreateAsync(appRole);
             }
             return await _userManager.AddToRoleAsync(appUser, role);
         }
-
-        public async Task<IdentityResult> CustomerRegisterAsync(CustomerRegisterDto customerRegisterDto)
+        private async Task<IdentityResult> CreateUser(AppUser appUser, string password) => await _userManager.CreateAsync(appUser, password);
+        private async Task CustomerAddAsync(Customer customer)
         {
-            AppUser appUser = new AppUser()
-            {
-                Email = customerRegisterDto.Email,
-                PhoneNumber = customerRegisterDto.PhoneNumber,
-                UserName = customerRegisterDto.UserName,
-                FirstName = customerRegisterDto.FirstName,
-                Address = customerRegisterDto.Address,
-                LastName = customerRegisterDto.LastName
-            };
-            IdentityResult result = await _userManager.CreateAsync(appUser, customerRegisterDto.Password);
-            Customer customer = new() { Id = appUser.Id };
             await _unitOfWork.CustomerDal.AddAsync(customer);
             await _unitOfWork.SaveAsync();
-            if (result.Succeeded)
-            {
-                await AddToRoleAsync(appUser, "customer");
-                await _unitOfWork.SaveAsync();
-            }
-            return result;
         }
-        public async Task<IdentityResult> SellerRegisterAsync(SellerRegisterDto sellerRegisterDto)
+        private async Task SellerAddAsync(Seller seller)
         {
-            AppUser appUser = new AppUser()
-            {
-                Email = sellerRegisterDto.Email,
-                PhoneNumber = sellerRegisterDto.PhoneNumber,
-                UserName = sellerRegisterDto.UserName,
-                Address = sellerRegisterDto.Address,
-                FirstName = sellerRegisterDto.FirstName,
-                LastName = sellerRegisterDto.LastName
-            };
-            IdentityResult result = await _userManager.CreateAsync(appUser, sellerRegisterDto.Password);
-            Seller seller = new Seller()
-            {
-                Id = appUser.Id,
-                CompanyName = sellerRegisterDto.CompanyName,
-            };
             await _unitOfWork.SellerDal.AddAsync(seller);
             await _unitOfWork.SaveAsync();
-
+        }
+        public async Task<IdentityResult> CustomerRegisterAsync(CustomerRegisterDto customerRegisterDto)
+        => await Register<Customer, CustomerRegisterDto>(customerRegisterDto, customerRegisterDto.Password, "customer");
+        public async Task<IdentityResult> SellerRegisterAsync(SellerRegisterDto sellerRegisterDto)
+        => await Register<Seller, SellerRegisterDto>(sellerRegisterDto, sellerRegisterDto.Password, "seller");
+        public async Task<IdentityResult> Register<TEntity, TDto>(TDto registerDto, string password, string role)
+        {
+            AppUser appUser = _mapper.Map<AppUser>(registerDto);
+            IdentityResult result = await CreateUser(appUser, password);
+            TEntity entity;
             if (result.Succeeded)
             {
-                await AddToRoleAsync(appUser, "seller");
-                await _unitOfWork.SaveAsync();
+                await AddToRoleAsync(appUser, role);
+                switch (typeof(TEntity))
+                {
+                    case Type customerType when customerType == typeof(Customer):
+                        entity = _mapper.Map<TEntity>(appUser);
+                        await CustomerAddAsync(entity as Customer);
+                        break;
+                    case Type sellerType when sellerType == typeof(Seller):
+                        entity = _mapper.Map<TEntity>(appUser);
+                        await SellerAddAsync(entity as Seller);
+                        break;
+                    default:
+                        break;
+                }
             }
             return result;
         }
@@ -100,7 +91,6 @@ namespace HizliSec.Business.Concrete
             return user is not null ? await _signInManager.PasswordSignInAsync(user, loginDto.Password, true, false) : null;
         }
         public async Task SignOutAsync() => await _signInManager.SignOutAsync();
-
         public async Task<IdentityResult> PasswordResetAsync(string userName, string newPassword)
         {
             string token = null;
@@ -112,44 +102,41 @@ namespace HizliSec.Business.Concrete
             }
             return await _userManager.ResetPasswordAsync(user, token, newPassword);
         }
-
         public async Task<IdentityResult> UpdatePasswordAsync(string userName, string currentPassword, string newPassword)
         {
             AppUser user = await GetUserAsync(userName);
             return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         }
-
         public async Task<AppUser> GetUserAsync(string userName)
         {
-            return await _userManager.Users.FirstOrDefaultAsync(x => !userName.Contains("@") ? x.UserName == userName : x.Email == userName);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => !userName.Contains("@") ? x.UserName == userName : x.Email == userName);
+            return user;
         }
-
-        public async Task<IdentityResult> RemoveUserAsync(string userName)
-        {
-            IdentityResult result = null;
-            using (TransactionScope ts = new TransactionScope())
-            {
-                try
-                {
-                    AppUser user = await GetUserAsync(userName);
-                    // gelen role gore seller veya customer silinecek.
-                    Seller seller = await _unitOfWork.SellerDal.GetAsync(x => x.Id == user.Id);
-                    result = await _userManager.DeleteAsync(user);
-                    if (result.Succeeded)
-                    {
-                        await _unitOfWork.SellerDal.DeleteAsync(seller);
-                        await _unitOfWork.SaveAsync();
-                    }
-                    ts.Complete();
-                }
-                catch (Exception)
-                {
-                    ts.Dispose();
-                }
-            }
-            return result;
-        }
-
+        //public async Task<IdentityResult> RemoveUserAsync(string userName)
+        //{
+        //    IdentityResult result = null;
+        //    using (TransactionScope ts = new TransactionScope())
+        //    {
+        //        try
+        //        {
+        //            AppUser user = await GetUserAsync(userName);
+        //            // gelen role gore seller veya customer silinecek.
+        //            Seller seller = await _unitOfWork.SellerDal.GetAsync(x => x.Id == user.Id);
+        //            result = await _userManager.DeleteAsync(user);
+        //            if (result.Succeeded)
+        //            {
+        //                await _unitOfWork.SellerDal.DeleteAsync(seller);
+        //                await _unitOfWork.SaveAsync();
+        //            }
+        //            ts.Complete();
+        //        }
+        //        catch (Exception)
+        //        {
+        //            ts.Dispose();
+        //        }
+        //    }
+        //    return result;
+        //}
         public async Task<List<string>> GetRolesAsync(AppUser user)
         {
             List<string> roles = (await _userManager.GetRolesAsync(user)).ToList();

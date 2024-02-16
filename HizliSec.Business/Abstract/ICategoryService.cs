@@ -6,11 +6,12 @@ namespace HizliSec.Business.Abstract
 {
     public interface ICategoryService
     {
-        Task<CategoryDto> GetByIdAsync(int id);
-        Task<List<CategoryDto>> GetByNameFilterAsync(string filter = "");
-        Task<List<CategoryDto>> GetAllAsync();
-        Task<int> DeleteAsync(int id);
-        Task<int> AddAsync(CategoryAddDto categoryDto);
-        Task<int> UpdateAsync(CategoryDto categoryDto);
+        Task<CategoryDto> GetCategory(int id);
+        Task<List<CategoryDto>> GetAllCategories();
+        List<CategoryWithProductDto> CategoryWithProducts();
+        Task<CategoryWithProductDto> CategoryWithProduct(int categoryId);
+        Task<int> Add(CategoryAddDto categoryAddDto);
+        Task<int> Remove(int id);
+        Task<int> Uptade(CategoryDto categoryDto);
     }
 }

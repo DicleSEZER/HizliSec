@@ -7,7 +7,7 @@ namespace HizliSec.Business.Abstract
     public interface IAuthService
     {
         Task<List<string>> GetRolesAsync(AppUser user);
-        Task<IdentityResult> RemoveUserAsync(string userName);
+        //Task<IdentityResult> RemoveUserAsync(string userName);
         Task<AppUser> GetUserAsync(string userName);
         Task<IdentityResult> PasswordResetAsync(string userName, string newPassword);
         Task<IdentityResult> UpdatePasswordAsync(string userName, string currentPassword, string newPassword);
