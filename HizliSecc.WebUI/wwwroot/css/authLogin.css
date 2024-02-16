@@ -1,0 +1,91 @@
+﻿body {
+    background: url(../img/19810_en_1.jpg);
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+}
+
+.giris-sistemi {
+    margin-top: 17%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50%;
+}
+
+a {
+    text-decoration: none
+}
+
+.formu-kapat {
+    margin-top: 10px;
+    width: 20%;
+    margin-left: 40%;
+}
+
+.kart {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.195);
+    gap: 15px;
+    width: 600px;
+    height: auto;
+    border: 1px solid #ccc;
+}
+
+#button-card {
+    background-color: rgba(135, 109, 64, 0.61);
+    color: rgba(255, 255, 255, 0.524);
+    display: block;
+    align-items: center;
+}
+
+.müşteri-kayıt {
+    margin-top: 50px;
+}
+
+.müşteri-giriş {
+    margin-top: 50px;
+}
+
+
+
+form {
+    justify-content: center; /* Yatayda ortala */
+    align-items: center; /* Dikeyde ortala */
+    margin-top: 28px;
+}
+
+.sol-kart,
+.sağ-kart {
+    flex-direction: column;
+    justify-content: center; /* Yatayda ortala */
+    align-items: center; /* Dikeyde ortala */
+    flex: 1;
+    padding: 10%;
+}
+
+.sol-kart {
+    background-color: rgba(255, 255, 255, 0.092);
+}
+
+.sağ-kart {
+    background-color: rgba(255, 255, 255, 0.092);
+}
+
+#button-form {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+input {
+    display: block;
+    height: 23px;
+    width: 80%;
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
