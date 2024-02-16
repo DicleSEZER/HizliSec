@@ -1,0 +1,57 @@
+﻿
+
+<div class="giris-sistemi">
+        <div class="kart">
+
+            <div class="sol-kart">
+                <button id="button-card" class="satıcı-kayıt" onclick="goster('satıcı-kayıt') ">Satıcı Kayıt Ol</button>
+                <form action="Register" method="post" id="satici-kayıt-form">
+                    <input type="text" placeholder="Ad:" class="input" name="firstName">
+                <input type="text" placeholder="Soyad:" class="input" name="lastName">
+                <input type="text" placeholder="Kullanıcı Adı:" class="input" name="userName">
+                <input type="email" placeholder="E-Posta:" class="input" name="email">
+                <input type="password" placeholder="Şifreniz:" class="input " name="password">
+                <input type="password" placeholder="Şifre Tekrarı:">
+                <input type="text" placeholder="Sirket Adi:" class="input" name="companyName">
+                <input type="text" placeholder="Adres:" class="input" name="address">
+                <input type="tel" placeholder="Telefon:" class="input" name="phoneNumber">
+                   <button id="button-form" type="submit"><a href="#">Satıcı Kayıt Ol</a> </button>
+                </form>
+
+
+                <button id="button-card" class="müşteri-kayıt" onclick="goster('müşteri-kayıt')">Müşteri Kayıt Ol</button>
+            <form action="Register" method="post" id="müsteri-kayıt-form" style="display: none;">
+                    <input type="text" placeholder="Adı:">
+                    <input type="text" placeholder="Soyadı:">
+                    <input type="email" name="" id="" placeholder="E-mail:">
+                    <input type="password" placeholder="Şifre:">
+                    <input type="password" placeholder="Şifre Tekrarı:">
+                    
+                    <button id="button-form" type="submit"><a href="#">Müşteri Kayıt Ol</a></button>
+                </form>
+            </div>
+            <div class="sağ-kart">
+                <button id="button-card" class="satıcı-giriş" onclick="goster('satıcı-giriş')">Satıcı Giriş Yap</button>
+            <form action="Login" method="post" id="satici-giris-form">
+                    <input type="text" placeholder="Kullanıcı Adı:">
+                    <input type="password" placeholder="Şifre:">
+                    <button id="button-form" type="submit"><a href="#">Satıcı Giriş Yap</a></button>
+                </form>
+                
+                <button id="button-card" class="müşteri-giriş" onclick="goster('müşteri-giriş')">Müşteri Giriş Yap</button>
+            <form action="Login" method="post" id="müsteri-giriş-form" style="display: none;">
+                    <input type="text" placeholder="E-mail or userName">
+                    <input type="password" placeholder="Şifre:">
+                    <button id="button-form" type="submit"><a href="#">Müşteri Giriş Yap</a></button>
+                </form>
+
+               
+            </div>
+            
+        
+    </div>
+
+</div>
+<div>
+    <button id="button-card" class="formu-kapat" onclick="goster('sakla')">Gösterilen Formu Kapat</button>
+        </div>
